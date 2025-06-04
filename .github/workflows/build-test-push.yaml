@@ -1,0 +1,35 @@
+name: Build, Test, and Push to Docker Registry
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.check_version.outputs.version_changed }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          # If your repo has many commits, 'fetch-depth: 0' ensures we can compare package.json
+          # to its previous version (older commit).
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.14.0
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Run Tests
+        run: npm run test
+
