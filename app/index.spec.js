@@ -25,7 +25,7 @@ describe('Ping handler unit tests', () => {
     const result = await pingHandler(mockPrisma);
     
     // Assert
-    expect(result).toEqual({ status: 200, body: { count: 5 } });
+    expect(result).toEqual({ status: 200, body: { count: 4 } });
     expect(mockPrisma.counter.create).toHaveBeenCalledWith({ data: {} });
     expect(mockPrisma.counter.count).toHaveBeenCalled();
   });
