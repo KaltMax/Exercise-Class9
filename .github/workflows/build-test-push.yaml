@@ -52,7 +52,7 @@ jobs:
         run: docker save mkaltenr/example-git:latest > image.tar
       
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: image.tar
