@@ -5,6 +5,9 @@
 * [Prerequisites](#prerequisites)
 * [Local Development](#local-development)
 * [Production Deployment](#production-deployment)
+  * [Using Docker Compose](#using-docker-compose)
+  * [Using Docker Run](#using-docker-run)
+* [CI/CD Pipeline](#cicd-pipeline)
 * [NPM Scripts](#npm-scripts)
 * [Environment Variables](#environment-variables)
   * [Adding new Environment Variables](#adding-new-environment-variables)
@@ -47,6 +50,8 @@ You can now visit [http://localhost:5000/ping](http://localhost:5000/ping) and s
 
 ## Production Deployment
 
+### Using Docker Compose
+
 Start the application in production with:
 
 ```sh
@@ -55,8 +60,37 @@ docker compose up --build
 
 This command will spin up:
 * the database
-* run run the database migrations
-* start the web app that can communicate with the database on [http://localhost:5000/ping](http://localhost:5000/ping]
+* run the database migrations
+* start the web app that can communicate with the database on [http://localhost:5000/ping](http://localhost:5000/ping)
+
+### Using Docker Run
+
+If you want to run just the web image directly from Docker Hub (note: this requires a separate database setup):
+
+```sh
+docker run -d -p 127.0.0.1:5000:5000 --name class9-example mkaltenr/example-git:latest
+```
+
+Important: When running the container this way, you need to:
+1. Make sure the `HOST` environment variable is set to `0.0.0.0` in the container
+2. Ensure your database is accessible to the container
+3. Database migrations have been run
+
+You can pass environment variables directly to the container:
+
+```sh
+docker run -d -p 127.0.0.1:5000:5000 -e HOST=0.0.0.0 -e DATABASE_URL=postgresql://username:password@host:5432/db_name --name class9-example mkaltenr/example-git:latest
+```
+
+## CI/CD Pipeline
+
+The project includes a GitHub Actions workflow that:
+
+1. Tests the application
+2. Builds a Docker image
+3. Pushes the image to Docker Hub as `mkaltenr/example-git:latest`
+
+The workflow runs automatically on pushes to the main branch and can be found in `.github/workflows/build-test-push.yaml`.
 
 ## NPM Scripts
 
@@ -64,6 +98,7 @@ This command will spin up:
 * `npm run start`: will start the server found in the `dist` folder
 * `npm run migrate`: will start the migrations
 * `npm run prisma:generate`: will create the types for the database interactions (create, update, delete, etc, ...)
+* `npm run test`: will run Jest tests with coverage report
 * `npm run start:dev`: will start the server with nodemon that watches for changes in the code
 * `npm run migrate:dev`: will start the migrations in development mode
 * `npm run prisma:generate:dev`: will create the types for the database interactions in development mode (create, update, delete, etc, ...)
