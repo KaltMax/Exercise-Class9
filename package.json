@@ -16,7 +16,7 @@
     "migrate:dev": "dotenv -e .env.local -- npx prisma migrate dev",
     "prisma:generate:dev": "dotenv -e .env.local -- npx prisma generate"
   },
-  "author": "Lukas Aichbauer <lukas@devopscycle.com> (https://devopscycle.com)",
+  "author": "Maximilian Kaltenreiner, Lukas Kalab <lukas@max.com>",
   "license": "MIT",
   "keywords": [],
   "prisma": {

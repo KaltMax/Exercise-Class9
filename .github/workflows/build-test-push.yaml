@@ -6,30 +6,78 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  test:
+    name: Test Stage
     runs-on: ubuntu-latest
-    outputs:
-      version_changed: ${{ steps.check_version.outputs.version_changed }}
-
+    
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
-        with:
-          # If your repo has many commits, 'fetch-depth: 0' ensures we can compare package.json
-          # to its previous version (older commit).
-          fetch-depth: 0
-
+      
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
           node-version: 22.14.0
-
+          cache: 'npm'
+      
       - name: Install Dependencies
         run: npm install
-
-      - name: Build
-        run: npm run build
-
+      
       - name: Run Tests
         run: npm run test
 
+  build:
+    name: Build Stage
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false
+          tags: mkaltenr/example-git:latest
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Save Docker image
+        run: docker save mkaltenr/example-git:latest > image.tar
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          path: image.tar
+          retention-days: 1
+
+  push:
+    name: Push Stage
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+      
+      - name: Load Docker image
+        run: docker load < image.tar
+      
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Push to DockerHub
+        run: |
+          docker push mkaltenr/example-git:latest
